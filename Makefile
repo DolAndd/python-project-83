@@ -20,4 +20,3 @@ make lint:
 
 make lint-fix:
 	uv run ruff check --fix .
-
