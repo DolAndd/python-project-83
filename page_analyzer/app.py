@@ -1,6 +1,6 @@
 import os
 import psycopg2
-import validators
+from page_analyzer.validate_url import validate_url
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from flask import (
@@ -30,7 +30,7 @@ def home_page():
 @app.post('/urls')
 def urls_post():
     url_data = request.form.get('url')
-    if validators.url(url_data) is not True:
+    if validate_url(url_data) is not True:
         flash('Некорректный URL', 'error')
         messages = get_flashed_messages(with_categories=True)
         return render_template("home.html", url=url_data, messages=messages)
