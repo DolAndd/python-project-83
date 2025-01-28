@@ -70,3 +70,7 @@ def urls_index():
         urls=urls,
         messages=messages
     )
+
+@app.post('urls/<id>/checks')
+def url_check(id):
+
