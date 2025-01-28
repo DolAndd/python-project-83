@@ -43,20 +43,20 @@ def urls_post():
         flash('Страница уже существует', 'info')
         return redirect(url_for('urls_show', id=url_id), code=302)
 
-    url_id = repo.save(new_url)
+    url_id = repo.save_url(new_url)
     flash('Страница успешно добавлена', 'success')
     return redirect(url_for('urls_show', id=url_id), code=302)
-
-
 
 
 @app.route('/urls/<id>')
 def urls_show(id):
     messages = get_flashed_messages(with_categories=True)
     url = repo.find_id(id)
+    url_checks = repo.get_url_check(id)
     return render_template(
         'show.html',
         url=url,
+        url_checks=url_checks,
         messages=messages
     )
 
@@ -71,6 +71,9 @@ def urls_index():
         messages=messages
     )
 
-@app.post('urls/<id>/checks')
-def url_check(id):
 
+@app.post('/urls/<id>/checks')
+def url_check(id):
+    repo.save_url_check(id)
+    flash('Страница успешно проверена', 'success')
+    return redirect(url_for('urls_show', id=id), code=302)
