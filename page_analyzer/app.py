@@ -1,18 +1,21 @@
 import os
-import psycopg2
-from page_analyzer.validate_url import validate_url
-from dotenv import load_dotenv
 from urllib.parse import urlparse
+import requests
+
+import psycopg2
+from dotenv import load_dotenv
 from flask import (
-    get_flashed_messages,
-    flash,
     Flask,
+    flash,
+    get_flashed_messages,
     redirect,
     render_template,
     request,
-    url_for
+    url_for,
 )
+
 from page_analyzer.url_repository import UrlRepository
+from page_analyzer.validate_url import validate_url
 
 load_dotenv()
 app = Flask(__name__)
@@ -74,6 +77,13 @@ def urls_index():
 
 @app.post('/urls/<id>/checks')
 def url_check(id):
-    repo.save_url_check(id)
+    url = repo.find_id(id)['name']
+    try:
+        result = requests.get(url)
+        result.raise_for_status()
+    except Exception:
+        flash('Произошла ошибка при проверке', 'error')
+        return redirect(url_for('urls_show', id=id), code=302)
+    repo.save_url_check(id, result.status_code)
     flash('Страница успешно проверена', 'success')
     return redirect(url_for('urls_show', id=id), code=302)
