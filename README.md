@@ -3,7 +3,7 @@
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/DolAndd/python-project-83/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/DolAndd/python-project-83/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/858ebc035b21236ac119/maintainability)](https://codeclimate.com/github/DolAndd/python-project-83/maintainability)
-![example event parameter](https://github.com/DolAndd/python-project-83/blob/main/.github/workflows/action.yaml/badge.svg?event=push)
+![example event parameter](https://github.com/DolAndd/python-project-83/actions/workflows/action.yaml/badge.svg?event=push)
 
 #### Description:
 Page Analyzer is a web service that makes requests to specified sites, analyzes them and saves the received data into the created database. The application is based on the Flask framework
