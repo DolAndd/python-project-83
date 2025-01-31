@@ -1,8 +1,8 @@
 import os
 from urllib.parse import urlparse
-import requests
 
 import psycopg2
+import requests
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -14,6 +14,7 @@ from flask import (
     url_for,
 )
 
+from page_analyzer.url_parser import get_check_url
 from page_analyzer.url_repository import UrlRepository
 from page_analyzer.validate_url import validate_url
 
@@ -55,6 +56,8 @@ def urls_post():
 def urls_show(id):
     messages = get_flashed_messages(with_categories=True)
     url = repo.find_id(id)
+    if not url:
+        return render_template('error_404.html')
     url_checks = repo.get_url_check(id)
     return render_template(
         'show.html',
@@ -84,6 +87,9 @@ def url_check(id):
     except Exception:
         flash('Произошла ошибка при проверке', 'error')
         return redirect(url_for('urls_show', id=id), code=302)
-    repo.save_url_check(id, result.status_code)
+    h1 = get_check_url(result.text).get('h1')
+    title = get_check_url(result.text).get('title')
+    content = get_check_url(result.text).get('content')
+    repo.save_url_check(id, h1, title, content, result.status_code)
     flash('Страница успешно проверена', 'success')
     return redirect(url_for('urls_show', id=id), code=302)

@@ -51,10 +51,12 @@ class UrlRepository:
                 )
             return cur.fetchall()
 
-    def save_url_check(self, url_id, code):
+    def save_url_check(self, url_id, h1, title, content, code):
         with self.conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO url_checks (url_id, status_code, created_at) VALUES (%s, %s, %s)",
-                (url_id, code, date.today())
+                '''INSERT INTO url_checks 
+                (url_id, h1, title, description, status_code, created_at) 
+                VALUES (%s, %s, %s, %s, %s, %s)''',
+                (url_id, h1, title, content, code, date.today())
             )
         self.conn.commit()
