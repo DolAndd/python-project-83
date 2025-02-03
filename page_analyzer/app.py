@@ -35,7 +35,10 @@ def urls_post():
     if validate_url(url_data) is not True:
         flash('Некорректный URL', 'error')
         messages = get_flashed_messages(with_categories=True)
-        return render_template("home.html", url=url_data, messages=messages), 422
+        return render_template(
+            "home.html",
+            url=url_data,
+            messages=messages), 422
 
     parsed_url = urlparse(url_data)
     new_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
