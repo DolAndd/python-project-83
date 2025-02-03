@@ -21,8 +21,7 @@ from page_analyzer.validate_url import validate_url
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-conn = psycopg2.connect(os.getenv('DATABASE_URL'))
-repo = UrlRepository(conn)
+repo = UrlRepository(os.getenv('DATABASE_URL'))
 
 
 @app.route("/")

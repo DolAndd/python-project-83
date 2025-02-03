@@ -1,20 +1,23 @@
 from datetime import date
-
+import psycopg2
 from psycopg2.extras import RealDictCursor
 
 
 class UrlRepository:
-    def __init__(self, conn):
-        self.conn = conn
+    def __init__(self, db):
+        self.db = db
+
+    def get_connection(self):
+        return psycopg2.connect(self.db)
 
     def find_id(self, id):
-        with self.conn as conn:
+        with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM urls WHERE id = %s", (id,))
                 return cur.fetchone()
 
     def get_content(self):
-        with self.conn as conn:
+        with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                 '''SELECT DISTINCT ON (urls.id)
@@ -29,7 +32,7 @@ class UrlRepository:
                 return cur.fetchall()
 
     def save_url(self, url_data):
-        with self.conn as conn:
+        with self.get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                 '''INSERT INTO urls (name, created_at) VALUES (%s, %s) 
@@ -41,13 +44,13 @@ class UrlRepository:
             return id
 
     def find_name(self, name):
-        with self.conn as conn:
+        with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM urls WHERE name = %s", (name,))
                 return cur.fetchone()
 
     def get_url_check(self, url_id):
-        with self.conn as conn:
+        with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                 '''SELECT id, status_code, h1, title, description, created_at 
@@ -57,7 +60,7 @@ class UrlRepository:
                 return cur.fetchall()
 
     def save_url_check(self, url_id, h1, title, content, code):
-        with self.conn as conn:
+        with self.get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                 '''INSERT INTO url_checks 
