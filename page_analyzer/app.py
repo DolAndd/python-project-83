@@ -43,10 +43,9 @@ def urls_post():
     parsed_url = urlparse(url_data)
     new_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-    if repo.get_url_by_name(new_url):
-        url_id = repo.get_url_by_name(new_url)['id']
+    if url_id := repo.get_url_by_name(new_url):
         flash('Страница уже существует', 'info')
-        return redirect(url_for('urls_show', id=url_id), code=302)
+        return redirect(url_for('urls_show', id=url_id['id']), code=302)
 
     url_id = repo.save_url(new_url)
     flash('Страница успешно добавлена', 'success')
