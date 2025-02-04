@@ -11,3 +11,4 @@ def get_check_url(url_text):
     contents = soup.find('meta', attrs={'name': 'description'})
     content['content'] = contents['content'] if contents else ''
     return content
+

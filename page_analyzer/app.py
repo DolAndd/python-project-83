@@ -43,20 +43,18 @@ def urls_post():
     parsed_url = urlparse(url_data)
     new_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-    if repo.find_name(new_url):
-        url_id = repo.find_name(new_url)['id']
+    if url_id := repo.get_url_by_name(new_url):
         flash('Страница уже существует', 'info')
-        return redirect(url_for('urls_show', id=url_id), code=302)
-
-    url_id = repo.save_url(new_url)
-    flash('Страница успешно добавлена', 'success')
+    else:
+        url_id = repo.save_url(new_url)
+        flash('Страница успешно добавлена', 'success')
     return redirect(url_for('urls_show', id=url_id), code=302)
 
 
 @app.route('/urls/<id>')
 def urls_show(id):
     messages = get_flashed_messages(with_categories=True)
-    url = repo.find_id(id)
+    url = repo.get_url_by_id(id)
     if not url:
         return render_template('error_404.html')
     url_checks = repo.get_url_check(id)
@@ -71,7 +69,7 @@ def urls_show(id):
 @app.route('/urls')
 def urls_index():
     messages = get_flashed_messages(with_categories=True)
-    urls = repo.get_content()
+    urls = repo.get_urls()
     return render_template(
         'index.html',
         urls=urls,
@@ -81,16 +79,20 @@ def urls_index():
 
 @app.post('/urls/<id>/checks')
 def url_check(id):
-    url = repo.find_id(id)['name']
+    url = repo.get_url_by_id(id)['name']
     try:
         result = requests.get(url)
         result.raise_for_status()
     except Exception:
         flash('Произошла ошибка при проверке', 'error')
         return redirect(url_for('urls_show', id=id), code=302)
-    h1 = get_check_url(result.text).get('h1')
-    title = get_check_url(result.text).get('title')
-    content = get_check_url(result.text).get('content')
-    repo.save_url_check(id, h1, title, content, result.status_code)
+    url_pars = get_check_url(result.text)
+    repo.save_url_check(
+        id,
+        url_pars['h1'],
+        url_pars['title'],
+        url_pars['content'],
+        result.status_code
+    )
     flash('Страница успешно проверена', 'success')
     return redirect(url_for('urls_show', id=id), code=302)

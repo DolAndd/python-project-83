@@ -11,13 +11,13 @@ class UrlRepository:
     def get_connection(self):
         return psycopg2.connect(self.db)
 
-    def find_id(self, id):
+    def get_url_by_id(self, id):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM urls WHERE id = %s", (id,))
                 return cur.fetchone()
 
-    def get_content(self):
+    def get_urls(self):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
@@ -44,11 +44,11 @@ class UrlRepository:
                 conn.commit()
             return id
 
-    def find_name(self, name):
+    def get_url_by_name(self, name):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM urls WHERE name = %s", (name,))
-                return cur.fetchone()
+                return cur.fetchone()['id']
 
     def get_url_check(self, url_id):
         with self.get_connection() as conn:
