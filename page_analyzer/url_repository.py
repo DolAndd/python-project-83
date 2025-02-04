@@ -48,7 +48,7 @@ class UrlRepository:
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM urls WHERE name = %s", (name,))
-                return cur.fetchone()['id']
+                return cur.fetchone()
 
     def get_url_check(self, url_id):
         with self.get_connection() as conn:
