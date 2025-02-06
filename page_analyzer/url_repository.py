@@ -1,24 +1,18 @@
 from datetime import date
 
-import psycopg2
 from psycopg2.extras import RealDictCursor
 
 
 class UrlRepository:
-    def __init__(self, db):
-        self.db = db
 
-    def get_connection(self):
-        return psycopg2.connect(self.db)
-
-    def get_url_by_id(self, id):
-        with self.get_connection() as conn:
+    def get_url_by_id(self, conn, id):
+        with conn as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM urls WHERE id = %s", (id,))
                 return cur.fetchone()
 
-    def get_urls(self):
-        with self.get_connection() as conn:
+    def get_urls(self, conn):
+        with conn as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                 '''SELECT DISTINCT ON (urls.id)
@@ -32,8 +26,8 @@ class UrlRepository:
                 )
                 return cur.fetchall()
 
-    def save_url(self, url_data):
-        with self.get_connection() as conn:
+    def save_url(self, conn, url_data):
+        with conn as conn:
             with conn.cursor() as cur:
                 cur.execute(
                 '''INSERT INTO urls (name, created_at) VALUES (%s, %s) 
@@ -44,14 +38,14 @@ class UrlRepository:
                 conn.commit()
             return id
 
-    def get_url_by_name(self, name):
-        with self.get_connection() as conn:
+    def get_url_by_name(self, conn, name):
+        with conn as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT * FROM urls WHERE name = %s", (name,))
                 return cur.fetchone()
 
-    def get_url_check(self, url_id):
-        with self.get_connection() as conn:
+    def get_url_check(self, conn, url_id):
+        with conn as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                 '''SELECT id, status_code, h1, title, description, created_at 
@@ -60,8 +54,8 @@ class UrlRepository:
                 )
                 return cur.fetchall()
 
-    def save_url_check(self, url_id, h1, title, content, code):
-        with self.get_connection() as conn:
+    def save_url_check(self, conn, url_id, h1, title, content, code):
+        with conn as conn:
             with conn.cursor() as cur:
                 cur.execute(
                 '''INSERT INTO url_checks 

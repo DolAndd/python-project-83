@@ -1,6 +1,7 @@
 import os
 from urllib.parse import urlparse
 
+import psycopg2
 import requests
 from dotenv import load_dotenv
 from flask import (
@@ -20,7 +21,11 @@ from page_analyzer.validate_url import validate_url
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-repo = UrlRepository(os.getenv('DATABASE_URL'))
+repo = UrlRepository()
+
+
+def get_connection(database):
+    return psycopg2.connect(database)
 
 
 @app.route("/")
@@ -31,6 +36,7 @@ def home_page():
 
 @app.post('/urls')
 def urls_post():
+    conn = get_connection(os.getenv('DATABASE_URL'))
     url_data = request.form.get('url')
     if validate_url(url_data) is not True:
         flash('Некорректный URL', 'error')
@@ -43,22 +49,23 @@ def urls_post():
     parsed_url = urlparse(url_data)
     new_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-    if url_id := repo.get_url_by_name(new_url):
+    if url_id := repo.get_url_by_name(conn, new_url):
         flash('Страница уже существует', 'info')
         return redirect(url_for('urls_show', id=url_id['id']), code=302)
 
-    url_id = repo.save_url(new_url)
+    url_id = repo.save_url(conn, new_url)
     flash('Страница успешно добавлена', 'success')
     return redirect(url_for('urls_show', id=url_id), code=302)
 
 
 @app.route('/urls/<id>')
 def urls_show(id):
+    conn = get_connection(os.getenv('DATABASE_URL'))
     messages = get_flashed_messages(with_categories=True)
-    url = repo.get_url_by_id(id)
+    url = repo.get_url_by_id(conn, id)
     if not url:
         return render_template('error_404.html')
-    url_checks = repo.get_url_check(id)
+    url_checks = repo.get_url_check(conn, id)
     return render_template(
         'show.html',
         url=url,
@@ -69,8 +76,9 @@ def urls_show(id):
 
 @app.route('/urls')
 def urls_index():
+    conn = get_connection(os.getenv('DATABASE_URL'))
     messages = get_flashed_messages(with_categories=True)
-    urls = repo.get_urls()
+    urls = repo.get_urls(conn)
     return render_template(
         'index.html',
         urls=urls,
@@ -80,7 +88,8 @@ def urls_index():
 
 @app.post('/urls/<id>/checks')
 def url_check(id):
-    url = repo.get_url_by_id(id)['name']
+    conn = get_connection(os.getenv('DATABASE_URL'))
+    url = repo.get_url_by_id(conn, id)['name']
     try:
         result = requests.get(url)
         result.raise_for_status()
@@ -89,6 +98,7 @@ def url_check(id):
         return redirect(url_for('urls_show', id=id), code=302)
     url_pars = get_check_url(result.text)
     repo.save_url_check(
+        conn,
         id,
         url_pars['h1'],
         url_pars['title'],
