@@ -1,9 +1,13 @@
 from datetime import date
 
+import psycopg2
 from psycopg2.extras import RealDictCursor
 
 
 class UrlRepository:
+
+    def get_connection(self, app):
+        return psycopg2.connect(app.config['DATABASE_URL'])
 
     def get_url_by_id(self, conn, id):
         with conn as conn:

@@ -1,7 +1,6 @@
 import os
 from urllib.parse import urlparse
 
-import psycopg2
 import requests
 from dotenv import load_dotenv
 from flask import (
@@ -25,10 +24,6 @@ app.config['DATABASE_URL'] = os.getenv('DATABASE_URL')
 repo = UrlRepository()
 
 
-def get_connection(app):
-    return psycopg2.connect(app.config['DATABASE_URL'])
-
-
 @app.route("/")
 def home_page():
     messages = get_flashed_messages(with_categories=True)
@@ -37,7 +32,7 @@ def home_page():
 
 @app.post('/urls')
 def urls_post():
-    conn = get_connection(app)
+    conn = repo.get_connection(app)
     url_data = request.form.get('url')
     if validate_url(url_data) is not True:
         flash('Некорректный URL', 'error')
@@ -61,7 +56,7 @@ def urls_post():
 
 @app.route('/urls/<id>')
 def urls_show(id):
-    conn = get_connection(app)
+    conn = repo.get_connection(app)
     messages = get_flashed_messages(with_categories=True)
     url = repo.get_url_by_id(conn, id)
     if not url:
@@ -77,7 +72,7 @@ def urls_show(id):
 
 @app.route('/urls')
 def urls_index():
-    conn = get_connection(app)
+    conn = repo.get_connection(app)
     messages = get_flashed_messages(with_categories=True)
     urls = repo.get_urls(conn)
     return render_template(
@@ -89,7 +84,7 @@ def urls_index():
 
 @app.post('/urls/<id>/checks')
 def url_check(id):
-    conn = get_connection(app)
+    conn = repo.get_connection(app)
     url = repo.get_url_by_id(conn, id)['name']
     try:
         result = requests.get(url)
